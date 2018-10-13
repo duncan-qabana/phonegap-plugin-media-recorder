@@ -171,7 +171,7 @@ MediaRecorder.prototype.requestData = function () {
         var src = this.src;
         // If using iOS with WKWebView sanitize url
         if (typeof window.webkit !== "undefined" && (cordova.platformId || "").indexOf("ios") > -1) {
-            src = src.replace(/^(cv)file\:\/\//, '');
+            src = src.replace(/^(cv)?file\:\/\//i, '');
         }
 
         // works on ios 10.3 and above
