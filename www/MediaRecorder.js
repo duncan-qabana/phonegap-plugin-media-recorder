@@ -168,8 +168,14 @@ MediaRecorder.prototype.requestData = function () {
         throw new DOMException('', 'InvalidStateError');
     } else {
         var that = this;
+        var src = this.src;
+        // If using iOS with WKWebView sanitize url
+        if (typeof window.webkit !== "undefined" && (cordova.platformId || "").indexOf("ios") > -1) {
+            src = src.replace(/^(cv)file\:\/\//, '');
+        }
+
         // works on ios 10.3 and above
-        fetch(this.src)
+        fetch(src)
             .then(function (response) {
                 return response.blob();
             })
