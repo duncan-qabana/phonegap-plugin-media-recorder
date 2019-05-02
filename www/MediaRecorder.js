@@ -31,14 +31,20 @@ var MediaRecorder = function (stream, options) {
     this.videoBitsPerSecond = 0;
     this.audioBitsPerSecond = 0;
     this.state = 'inactive';
-    this.onstart = function () {};
-    this.onstop = function () {};
-    this.ondataavailable = function () {};
-    this.onpause = function () {};
-    this.onresume = function () {};
-    this.onerror = function () {};
+    this.onstart = function () {
+    };
+    this.onstop = function () {
+    };
+    this.ondataavailable = function () {
+    };
+    this.onpause = function () {
+    };
+    this.onresume = function () {
+    };
+    this.onerror = function () {
+    };
     this.id = '';
-    this.src = 'cdvfile://localhost/temporary/recording.';
+    this.src = cordova.file.tempDirectory + 'recording.';
     if (this.stream.getVideoTracks()[0] === undefined) {
         this.typesSupported = {
             '': 'm4a',
@@ -74,18 +80,24 @@ MediaRecorder.prototype.start = function (timeslice) {
         // If we have an audio stream enable recording of audio
         var audio = this.stream.getAudioTracks().length > 0;
         var success = function (info) {
+            console.log('info : ', info);
+
             if (info.state === 'recording') {
                 that.onstart();
             } else if (info.state === 'inactive') {
                 that.src = info.url;
                 that.requestData();
-                this.state = info.state;
+                that.state = info.state;
                 that.onstop();
             }
         };
         var fail = function (error) {
+            console.log('error : ', error);
             that.onerror(error);
         };
+
+        console.log('Video : ', video);
+
         if (video !== '') {
             exec(success, fail, 'MediaRecorder', 'start', [
                 video,
@@ -167,19 +179,29 @@ MediaRecorder.prototype.requestData = function () {
     if (this.state === 'inactive') {
         throw new DOMException('', 'InvalidStateError');
     } else {
-        var that = this;
-        var src = this.src;
+        const that = this;
+
         // If using iOS with WKWebView sanitize url
-        if (typeof window.webkit !== "undefined" && (cordova.platformId || "").indexOf("ios") > -1) {
-            src = src.replace(/^(cv)?file\:\/\//i, '');
+        if (window.Ionic && window.Ionic.WebView && window.Ionic.WebView.convertFileSrc) {
+            console.log('Converting src !');
+            this.src = window.Ionic.WebView.convertFileSrc(this.src);
         }
 
+        console.log('Disabling cache!');
+        this.src = this.src + '?random=' + Math.round((new Date()).getTime() * Math.random() * 1000);
+
+        console.log('src : ', this.src);
+
         // works on ios 10.3 and above
-        fetch(src)
+        fetch(this.src)
             .then(function (response) {
+                console.log('response : ', response);
+
                 return response.blob();
             })
             .then(function (blob) {
+                console.log('blob : ', blob);
+
                 that.ondataavailable(blob);
             });
     }
