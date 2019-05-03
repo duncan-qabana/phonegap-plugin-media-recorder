@@ -29,19 +29,22 @@
     __weak CDVMediaRecorder* weakSelf = self;
     self.command = command;
     self.videoCam = command.arguments[0];
+    self.fileSrc = command.arguments[2];
 
     // switch to camera view
     CameraViewController *cameraViewController = [[CameraViewController alloc] init];
+    cameraViewController.fileSrc = self.fileSrc;
+
     cameraViewController.mediaStreamInterface = self;
     if(![self.videoCam isEqualToString:@""]){
         cameraViewController.camDirection = self.videoCam;
     }
     cameraViewController.isAudio = [[command argumentAtIndex:1 withDefault:@(NO)] boolValue];
     cameraViewController.task = @"mediaRecorder";
-    [weakSelf.viewController presentViewController:cameraViewController animated:YES completion:^{
 
+    [cameraViewController enableCapture];
+    [cameraViewController startRecording];
 
-    }];
 
 }
 - (void)receiveError

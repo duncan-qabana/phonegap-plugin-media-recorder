@@ -67,6 +67,15 @@ MediaRecorder.prototype.start = function (timeslice) {
         var that = this;
         if (this.isTypeSupported(this.mimeType)) {
             this.src = this.src + this.typesSupported[this.mimeType];
+
+            // If using iOS with WKWebView sanitize url
+            if (window.Ionic && window.Ionic.WebView && window.Ionic.WebView.convertFileSrc) {
+                this.src = window.Ionic.WebView.convertFileSrc(this.src);
+            }
+
+            this.src = this.src + '?random=' + Math.round((new Date()).getTime() * Math.random() * 1000);
+
+            console.log('src to use : ', this.src);
         } else {
             throw new DOMException(
                 'Incompatible mimeType',
@@ -101,7 +110,8 @@ MediaRecorder.prototype.start = function (timeslice) {
         if (video !== '') {
             exec(success, fail, 'MediaRecorder', 'start', [
                 video,
-                audio
+                audio,
+                this.src
             ]);
         } else {
             this.id = this.stream.getAudioTracks()[0].id;
@@ -181,14 +191,7 @@ MediaRecorder.prototype.requestData = function () {
     } else {
         const that = this;
 
-        // If using iOS with WKWebView sanitize url
-        if (window.Ionic && window.Ionic.WebView && window.Ionic.WebView.convertFileSrc) {
-            console.log('Converting src !');
-            this.src = window.Ionic.WebView.convertFileSrc(this.src);
-        }
 
-        console.log('Disabling cache!');
-        this.src = this.src + '?random=' + Math.round((new Date()).getTime() * Math.random() * 1000);
 
         console.log('src : ', this.src);
 
